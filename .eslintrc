@@ -1,0 +1,114 @@
+{
+    "parser": "babel-eslint",
+    "rules": {
+        //* Disabled rules ***********************************
+        "no-underscore-dangle": 0, // private vars can use _foo
+        "space-infix-ops": 0, // expressions can skip spaces
+        "strict" : 0, // strict is resolved at compile time
+        "new-cap": 0, // Overridden by the Babel plugin
+        "generator-star": 0, // Overridden by the Babel plugin
+        "generator-star-spacing": 0, // Overridden by the Babel plugin
+        "babel/object-shorthand": 0, // Should be enforced when we go full ES6
+        "indent": [0, 4],
+        "no-extra-bind": 1,
+        "no-redeclare": 0,
+        "quotes": [0, "double"], // TODO
+        "react/prop-types": 0, // Proptypes should always be set
+        "block-scoped-var": 2,
+        "comma-dangle": 2,
+        "comma-spacing": 2,
+        "curly": 2,
+        "dot-notation": 2,
+        "eol-last": 2,
+        "eqeqeq": 2,
+        "jsx-quotes": 2, // TODO
+        "key-spacing": 2,
+        "linebreak-style": [2, "unix"],
+        "no-constant-condition": 2,
+        "no-empty": 2,
+        "no-extra-boolean-cast": 2,
+        "no-extra-semi": 2,
+        "no-inner-declarations": 2,
+        "no-irregular-whitespace": 2,
+        "no-loop-func": 2,
+        "no-mixed-requires": 2,
+        "no-multi-spaces": 2,
+        "no-return-assign": 2,
+        "no-sequences": 2,
+        "no-shadow": 2,
+        "no-trailing-spaces": 2,
+        "no-undef": 2,
+        "no-unused-expressions": 2,
+        "no-unused-vars": [2, {"vars": "local", "args": "none"}],
+        "no-use-before-define": 2,
+        "semi": [2, "always"],
+        "semi-spacing": 2,
+        "space-return-throw-case": 2,
+        "space-unary-ops": 2,
+        "strict": [2, "never"],
+        "yoda": 2,
+
+        // Babel (ES6/ES7) rules
+        "babel/generator-star": 0,
+        "babel/generator-star-spacing": 0,
+        "babel/new-cap": 2, // capitalization for classes, doesn't trigger on *Decorators
+        "babel/space-in-brackets": 0, // We have nothing particularly against space in brackets
+
+        // React specific rules
+        "react/display-name": 0, // displayName is resolved at compile time
+        "react/forbid-prop-types": 0,
+        "react/jsx-boolean-value": 0,
+        "react/jsx-closing-bracket-location": [0, "props-aligned"], // Close JSX tags on the same line as last props
+        "react/jsx-curly-spacing": 0,
+        "react/jsx-indent-props": 0,
+        "react/jsx-key": 1,
+        "react/jsx-max-props-per-line": [0, 4],
+        "react/jsx-no-bind": 0,
+        "react/jsx-no-duplicate-props": 2,
+        "react/jsx-no-literals": 0,
+        "react/jsx-no-undef": 2,
+        "react/jsx-pascal-case": 0, // Enforce PascalCase (Not yet)
+        "react/jsx-sort-prop-types": 0, // Sort proptypes alphabetically
+        "react/jsx-sort-props": 0, // Sort props alphabetically
+        "react/jsx-uses-react": 2,
+        "react/jsx-uses-vars": 2,
+        "react/no-danger": 1,
+        "react/no-did-mount-set-state": [1, "allow-in-func"], // Causes re-render
+        "react/no-did-update-set-state": 1, // Causes re-render
+        "react/no-direct-mutation-state": 0, // TODO
+        "react/no-multi-comp": 0, // We allow multiple components per file
+        "react/no-set-state": 0, // Purist flux, but who cares
+        "react/no-unknown-property": 2,
+        "react/prefer-es6-class": 0,
+        "react/prop-types": 0,
+        "react/react-in-jsx-scope": 1,
+        "react/react-in-jsx-scope": 2,
+        "react/require-extension": 1,
+        "react/require-extension": 2,
+        "react/self-closing-comp": 2,
+        "react/sort-comp": 0, // Sort components in React class
+        "react/wrap-multilines": 2,
+    },
+    "env": {
+        "es6": true,
+        "node": true,
+        "browser": true
+    },
+    "ecmaFeatures": {
+        "modules": true,
+        "jsx": true
+    },
+    "plugins": [
+        "babel",
+        "react"
+    ],
+    "globals": {
+        "it": true,
+        "describe": true,
+        "eventually": true,
+        "beforeEach": true,
+        "afterEach": true,
+        "before": true,
+        "after": true
+    }
+}

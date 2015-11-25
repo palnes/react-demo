@@ -1,0 +1,44 @@
+{
+    "coord": {
+        "lon": 10.75,
+        "lat": 59.91
+    },
+    "weather": [
+        {
+            "id": 741,
+            "main": "Fog",
+            "description": "fog",
+            "icon": "50n"
+        }
+    ],
+    "base": "cmc stations",
+    "main": {
+        "temp": 271.15,
+        "pressure": 1006,
+        "humidity": 92,
+        "temp_min": 271.15,
+        "temp_max": 271.15
+    },
+    "wind": {
+        "speed": 2.05,
+        "deg": 181.5
+    },
+    "rain": {
+        "3h": 0.23
+    },
+    "clouds": {
+        "all": 90
+    },
+    "dt": 1453755000,
+    "sys": {
+        "type": 3,
+        "id": 5293,
+        "message": 0.0062,
+        "country": "NO",
+        "sunrise": 1453707911,
+        "sunset": 1453734859
+    },
+    "id": 3143244,
+    "name": "Oslo",
+    "cod": 200
+}

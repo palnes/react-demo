@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+        font-family: Helvetica, Arial, sans-serif;
+      }
+      .footnote {
+        position: absolute;
+        bottom: 4em;
+        right: 3em;
+        font-size: 50%;
+      }
+      .remark-slide-number {
+        display: none;
+      }
+
+    </style>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/styles/default.min.css">
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# Testing ES6 + React + Reflux + Freezerjs stack with Mocha test framework
+.footnote[Zakhar Shapurau, Xeneta AS, 2016]
+
+---
+
+## ES6
+ - Better code readability in general, mostly by arrow functions.
+ ```javascript
+    let f1 = (x, y) => {
+        return x + y;
+    };
+    let f2 = (x, y) => x + y;
+ ```
+
+---
+
+## ES6
+ - Goodies: Destructuring assignment, generators and more.
+ ```javascript
+    let data = {x: 1, y: 2};
+    let {x, y} = data;
+ ```
+ - Webpack with `Babel` loader compiles app into production js.
+
+---
+
+## Reflux
+ - Actions are fetching data.
+ - Stores listen to actions, and keep/transform data components might need.
+ - React components listen to stores, receive data from them and call actions.
+
+---
+
+## Freezerjs
+ - Comparable deep objects and arrays.
+ ```javascript
+    let obj = new Freezer({}).get();
+    let newObj = obj.set({x: 1});
+    console.log(obj === newObj);
+ ```
+ - Events on object change.
+
+---
+
+## Dumb components
+ - Are basically custom html tags.
+ - Take callbacks as property and trigger them on user interaction.
+ - Have no idea about stores or actions.
+
+## And smart components
+ - Handle state, dumb components and their callbacks.
+ - May use stores or actions.
+
+---
+
+## Testing in node
+
+---
+
+## Integrating Babel to compile ES6
+Generators are supported natively by node v5.1.0 which we use.
+```bash
+$ mocha --require .mochaEnv.jsx <testfile>
+```
+```javascript
+require('babel-core/register')({
+    'stage': 0,
+    'blacklist': [
+        'regenerator'
+    ]
+});
+```
+
+---
+
+## Defining global hooks
+```bash
+$ mocha --require .mochaEnv.jsx mocha.setup.jsx <testfile>
+```
+```javascript
+import jsdom from 'jsdom';
+beforeEach(() => {
+    /* Ensure that mocked modules do not travel between tests */
+    for (var i in require.cache) {
+        delete require.cache[i];
+    }
+    global.document = jsdom.jsdom(
+        '<!doctype html><html><body></body></html>'
+    );
+    global.window = document.defaultView;
+});
+```
+
+---
+
+## Testing dumb components
+Verify html they produce
+```javascript
+    it('Renders <pre> with given json inside', () => {
+        let TestUtils = require('react/addons').addons.TestUtils;
+        let element = TestUtils.renderIntoDocument(
+            <JsonDisplay json={{hey: 'Whatcha gonna do'}}/>
+        );
+        let pre = TestUtils.findRenderedDOMComponentWithTag(element, 'pre');
+        assert.include(pre.getDOMNode().textContent, 'Whatcha gonna do');
+    });
+```
+Test that callbacks are called on user interaction.
+
+---
+
+## Testing smart components
+Verifying output with shallow renderer
+```javascript
+it('Displays empty div by default', () => {
+    let JsonDisplay = require('jsx/components/JsonDisplay');
+    let TestUtils = require('react/addons').addons.TestUtils;
+    let renderer = TestUtils.createRenderer();
+    renderer.render(
+        <WeatherDisplay/>
+    );
+    let element = renderer.getRenderOutput();
+    assert.equal(element.type, JsonDisplay);
+    assert.isUndefined(element.props.children);
+});
+```
+__Can not test callbacks with shallow renderer__ :(
+
+---
+
+## Testing smart components
+Component - action - store interaction
+```javascript
+it('Eventually does stuff', done => {
+    doAction();
+    setTimeout(
+        () => {
+            assert(result);
+            done();
+        },
+        100
+    );
+});
+```
+
+---
+
+## Returning Promise
+```javascript
+it('Eventually does stuff', () => {
+    doAction();
+    return new Promise(resolve => {
+        setTimeout(
+            () => {
+                assert(result);
+                resolve();
+            },
+            100
+        );
+    });
+});
+```
+
+---
+
+## Eventually
+```javascript
+it('Eventually does stuff', () => {
+    doAction();
+    return eventually(() => {
+        assert(result);
+    });
+});
+```
+
+---
+
+## Nesting
+```javascript
+it('Eventually does stuff and more stuff later', () => {
+    doAction();
+    return eventually(() => {
+        assert(result);
+        doAnotherAction();
+        return eventually(() => {
+            assert(anotherResult);
+        });
+    });
+});
+```
+
+---
+
+## Eventually
+```javascript
+export const EVENTUALLY = (func) => new Promise(
+    resolve => {
+        let callback = () => {
+            let res = func();
+            if (res instanceof Promise) {
+                res.then(resolve);
+            } else {
+                resolve();
+            }
+        };
+        setTimeout(callback, 10);
+    }
+);
+```
+
+---
+
+## Fake timers with lolex
+```javascript
+it('Eventually does stuff', () => {
+    let clock = require('lolex').install();
+    doAction();
+    clock.tick(15);
+    assert(result);
+});
+```
+
+---
+
+## Mocking with simple-mock or sinon
+```javascript
+it('Calls callback when called', () => {
+    let simple = require('simple-mock'),
+        callback = simple.stub();
+    doAction(callback);
+    assert(callback.called);
+});
+```
+```javascript
+it('Calls callback when called', () => {
+    let sinon = require('sinon'),
+        callback = sinon.stub();
+    doAction(callback);
+    assert(callback.called);
+});
+```
+
+---
+
+## Testing in browsers
+
+---
+
+## Compiling test files with webpack
+```javascript
+module.exports = {module: {loaders: [{
+    test: /src\/.*\.jsx$/,
+    loader: 'babel-loader',
+    query: {
+        optional: [
+            'es7.classProperties',
+            'es7.objectRestSpread',
+            'spec.protoToAssign'
+        ],
+        loose: ['es6.classes']
+    }
+}]}};
+```
+
+---
+
+## Mocking XHR
+```javascript
+before(() => {
+    sinon.useFakeXMLHttpRequest();
+});
+```
+
+---
+
+## Clearing require cache
+```javascript
+beforeEach(() => {
+    for (var i in __webpack_require__.c) {
+        delete __webpack_require__.c[i];
+    }
+});
+```
+
+---
+
+## Clearing DOM in between tests
+```javascript
+afterEach(() => {
+    let React = require('react'),
+        _ = require('lodash');
+    _.map(
+        document.querySelectorAll('div'),
+        node => {
+            if (node.id !== 'mocha') {
+                React.unmountComponentAtNode(node);
+                node.parentNode.removeChild(node);
+            }
+        }
+    );
+});
+```
+
+---
+
+## Karma test runner
+```javascript
+/* karma.conf.js */
+module.exports = function(config) {
+    config.set({
+        singleRun: true,
+        browsers: ['Chrome'],
+        frameworks: ['mocha'],
+        preprocessors: {
+            'src/**/*.jsx': ['webpack']
+        },
+        files: [
+            'node_modules/sinon/pkg/sinon.js',
+            'src/testutil/karma.setup.jsx'
+        ]
+    });
+};
+
+```
+
+---
+
+## Assembling tests and defining global hooks
+```javascript
+/* src/testutil/karma.setup.jsx */
+mocha.setup();
+describe('', () => {
+    beforeEach(() => {
+        /* ... */
+    });
+    /* Import all tests */
+    let testsContext = require.context('..', true, /-test$/);
+    testsContext.keys().forEach(testsContext);
+});
+```
+
+---
+
+## Using Webpack
+```javascript
+/* karma.conf.js */
+var webpackCfg = require('./webpack.config.js');
+webpackCfg.externals = {
+    sinon: 'sinon'
+};
+module.exports = function(config) {
+    config.set({
+        preprocessors: {
+            'src/**/*.jsx': ['webpack']
+        },
+        webpack: webpackCfg,
+        webpackServer: {
+            quiet: true
+        },
+    });
+};
+```
+
+---
+
+## Gotchas!
+#### Freezerjs object update events do not work in IE
+```javascript
+let Freezer = require('freezer-js'),
+    data = new Freezer({}).get();
+data.getListener().on('update', newState => {
+    /* nope! */
+});
+```
+
+---
+
+## Gotchas!
+#### lolex did not work for us in browsers
+```javascript
+/* 
+ * doAction();
+ * clock.tick()
+ * assert(result);
+ */
+doAction();
+return eventually(() => {
+    assert(result);
+});
+```
+
+---
+
+## Gotchas!
+#### Different browsers
+```javascript
+const EVENTUALLY = (func, ticks=100) => new Promise(resolve => {
+    let ticksDone = 0;
+    let callback = () => {
+        ticksDone += 1;
+        try {
+            let res = func();
+            resolve();
+        } catch (error) {
+            if (ticksDone < ticks) {
+                setTimeout(callback, 10);
+            } else {
+                throw error;
+            }
+        }
+    };
+    setTimeout(callback, 10);
+});
+```
+
+---
+
+## Demo project on github
+
+## `xeneta/react-demo`
+
+
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
